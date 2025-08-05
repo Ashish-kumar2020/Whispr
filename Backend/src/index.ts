@@ -1,22 +1,23 @@
 console.log("HI");
 
-import { WebSocketServer } from "ws";
+import { WebSocketServer, WebSocket } from "ws";
 
-const wss = new WebSocketServer({port: 8000});
-
+const wss = new WebSocketServer({ port: 8000 });
 
 // event handler
-wss.on("connection",function(socket){
-    console.log("User Connected");
-    // setInterval(()=>{
-    //     socket.send("Current Price of Crypto - "+ Math.random())
-    // },500)
-    
-    // whatever client is sending the message it will come here
-    socket.on("message",(e)=>{
-        if(e.toString() == "ping"){
-            socket.send("pong");
-        }
-        
-    })
-})
+let userCount = 0;
+let allSockets: WebSocket[] = [];
+wss.on("connection",  (socket) =>{
+  allSockets.push(socket);
+  userCount = userCount + 1;
+  console.log("USER Connected",userCount);
+
+  // whenever a new message comes to a server below function will be called
+  socket.on("message", (message)=>{
+    console.log("message received", message.toString());
+    for(let i= 0; i < allSockets.length;i++){
+      const s = allSockets[i];
+      s.send(message.toString() + " : sent from the server");
+    }
+  })
+});
